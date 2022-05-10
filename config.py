@@ -6,11 +6,9 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 
 class Config(object):
+    DATABASE_FILE='sqlite:///:memory:'
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-#    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite://")
+    SQLALCHEMY_DATABASE_URI = DATABASE_FILE
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = \
-    'postgresql+psycopg2://{user}:{passwd}@db:5432/{db}'.format(
-        user=os.environ.get('DBUSER'),
-        passwd=os.environ.get('DBPASS'),
-        db=os.environ.get('DBNAME'))
+    DEBUG=True
+    SQLALCHEMY_ECHO=True
