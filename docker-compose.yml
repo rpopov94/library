@@ -17,4 +17,5 @@ services:
       - POSTGRES_USER=roman
       - POSTGRES_PASSWORD=pass
       - POSTGRES_DB=pg_lib
+      - PGDATA=/var/lib/postgresql/data/
   

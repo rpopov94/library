@@ -1,2 +1,2 @@
-FLASK_APP=app/__init__.py
+FLASK_APP=runner.py
 FLASK_ENV=development
