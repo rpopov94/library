@@ -19,6 +19,7 @@ admin.add_view(BookView(model=models.Book, session=db.session, name='Book'))
 def build_db():
     db.drop_all()
     db.create_all()
+    db.session.commit()
 
 if __name__ == '__main__':
     app_dir = os.path.realpath(os.path.dirname(__file__))
