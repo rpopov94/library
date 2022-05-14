@@ -1,28 +1,99 @@
 from app import db
-
+from werkzeug.security import generate_password_hash
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True)
-    email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
+    first_name = db.Column(db.String(100))
+    last_name = db.Column(db.String(100))
+    login = db.Column(db.String(80), unique=True)
+    email = db.Column(db.String(120))
+    password = db.Column(db.String(64))
 
-    def __repr__(self):
-        return '<User {}>'.format(self.username) 
+    @property
+    def is_authenticated(self):
+        return True
 
-class Book(db.Model):
-    id = db.Column(db.String(50))
-    title = db.Column(db.String(64), index=True, unique=True)
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+    # Required for administrative interface
+    def __unicode__(self):
+        return self.username
+
+class BlobMixin(object):
+    mimetype = db.Column(db.Unicode(length=255), nullable=False)
+    filename = db.Column(db.Unicode(length=255), nullable=False)
+    blob = db.Column(db.LargeBinary(), nullable=False)
+    size = db.Column(db.Integer, nullable=False)
+
+tags = db.Table('tags',
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
+    db.Column('book_id', db.Integer, db.ForeignKey('book.id'))
+)
+
+class Book(db.Model, BlobMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.String(64))
+    name = db.Column(db.String(64), index=True, unique=True)
     publisher = db.Column(db.String(64), index=True, unique=True)
     year = db.Column(db.Integer)
     level = db.relationship('Level', backref='book', lazy='dynamic')
-    tag = db.relationship("Tag", backref='book', lazy="dynamic")
+    tag = db.relationship("Tag", backref='books', secondary=tags, lazy="dynamic")
     book_file  = db.Column(db.LargeBinary)
 
-class Levels(db.Model):
+class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    level_id = db.Column(db.String(50), db.ForeignKey('book.id'))
+    name = db.Column(db.String(50))
+    tag_id = db.Column(db.String(50), db.ForeignKey('book.book_id'))
 
-class Tags(db.Model):
+class Level(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    tag_id = db.Column(db.String(50), db.ForeignKey('book.id'))
+    name = db.Column(db.String(50))
+    level_id = db.Column(db.String(50), db.ForeignKey('book.book_id'))
+
+
+def build_sample_db():
+    """
+    Populate a small db with some example entries.
+    """
+
+    import string
+    import random
+
+    db.drop_all()
+    db.create_all()
+    # passwords are hashed, to use plaintext passwords instead:
+    # test_user = User(login="test", password="test")
+    test_user = User(login="test", password=generate_password_hash("test"))
+    db.session.add(test_user)
+
+    first_names = [
+        'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie','Sophie', 'Mia',
+        'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
+        'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
+    ]
+    last_names = [
+        'Brown', 'Smith', 'Patel', 'Jones', 'Williams', 'Johnson', 'Taylor', 'Thomas',
+        'Roberts', 'Khan', 'Lewis', 'Jackson', 'Clarke', 'James', 'Phillips', 'Wilson',
+        'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Rodriguez', 'Cox', 'Alexander'
+    ]
+
+    for i in range(len(first_names)):
+        user = User()
+        user.first_name = first_names[i]
+        user.last_name = last_names[i]
+        user.login = user.first_name.lower()
+        user.email = user.login + "@example.com"
+        user.password = generate_password_hash(''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10)))
+        db.session.add(user)
+
+    db.session.commit()
+    return

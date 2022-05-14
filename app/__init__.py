@@ -1,12 +1,20 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from config import Config
 
+
+# Create Flask application
 app = Flask(__name__)
-app.config.from_object(Config)
+
+# Create dummy secrey key so we can use sessions
+app.config['SECRET_KEY'] = '123456790'
+# Create in-memory database
+app.config['DATABASE_FILE'] = 'sample_db.sqlite'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.config['DATABASE_FILE']
+SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'
+app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
 
-from app import routes, models
+
+
