@@ -7,9 +7,12 @@ from werkzeug.datastructures import FileStorage
 from wtforms import fields
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from werkzeug.datastructures import FileStorage
+import flask_login as login
+
 
 class BlobUploadField(fields.StringField):
     widget = FileInput()
+
     def __init__(self, label=None, allowed_extensions=None,
                  size_field=None, filename_field=None, mimetype_field=None, **kwargs):
         self.allowed_extensions = allowed_extensions
@@ -70,6 +73,9 @@ class BookView(ModelView):
         filename_field='filename',
         mimetype_field='mimetype'
     )}
+
+    def is_accessible(self):
+        return login.current_user.is_authenticated
 
     def _download_formatter(self, context, model, name):
         return Markup("<a href='{url}' target='_blank'>Download</a>".format(url=self.get_url('download_blob', id=model.id)))

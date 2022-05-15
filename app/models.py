@@ -1,13 +1,29 @@
-from app import db
+from app import db, app
 from werkzeug.security import generate_password_hash
+from flask_security import Security, SQLAlchemyUserDatastore, \
+    UserMixin, RoleMixin, login_required
 
-class User(db.Model):
+
+roles_users = db.Table('roles_users',
+        db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+        db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+
+
+class Role(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
     login = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(120))
     password = db.Column(db.String(64))
+    roles = db.relationship('Role', secondary=roles_users,
+                            backref=db.backref('users', lazy='dynamic'))
 
     @property
     def is_authenticated(self):
@@ -28,16 +44,23 @@ class User(db.Model):
     def __unicode__(self):
         return self.username
 
+
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
+
+
 class BlobMixin(object):
     mimetype = db.Column(db.Unicode(length=255), nullable=False)
     filename = db.Column(db.Unicode(length=255), nullable=False)
     blob = db.Column(db.LargeBinary(), nullable=False)
     size = db.Column(db.Integer, nullable=False)
 
+
 tags = db.Table('tags',
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
     db.Column('book_id', db.Integer, db.ForeignKey('book.id'))
 )
+
 
 class Book(db.Model, BlobMixin):
     id = db.Column(db.Integer, primary_key=True)

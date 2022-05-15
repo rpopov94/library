@@ -65,7 +65,6 @@ class MyAdminIndexView(admin.AdminIndexView):
 
     @expose('/login/', methods=('GET', 'POST'))
     def login_view(self):
-        # handle user login
         form = LoginForm(request.form)
         if helpers.validate_form_on_submit(form):
             user = form.get_user()
@@ -103,6 +102,18 @@ class MyAdminIndexView(admin.AdminIndexView):
     def logout_view(self):
         login.logout_user()
         return redirect(url_for('.index'))
+
+
+@app.route("/download/<int:id>", methods=['GET'])
+def download_blob(id):
+    if not login.current_user.is_authenticated:
+        return redirect(url_for('.index'))
+    _book = Book.query.get_or_404(id)
+    return send_file(
+        io.BytesIO(_book.blob),
+        attachment_filename=_book.filename,
+        mimetype=_book.mimetype
+    )
 
 
 # Flask views
