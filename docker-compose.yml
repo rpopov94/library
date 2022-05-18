@@ -13,6 +13,6 @@ services:
     image: postgres:10-alpine
     environment:
       - POSTGRES_USER=roman
-      - POSTGRES_PASSWORD=pass
+      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=pg_lib
   

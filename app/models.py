@@ -25,22 +25,6 @@ class User(db.Model, UserMixin):
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
-    @property
-    def is_authenticated(self):
-        return True
-
-    @property
-    def is_active(self):
-        return True
-
-    @property
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return self.id
-
-    # Required for administrative interface
     def __unicode__(self):
         return self.username
 
@@ -84,10 +68,6 @@ class Level(db.Model):
 
 
 def build_sample_db():
-    """
-    Populate a small db with some example entries.
-    """
-
     import string
     import random
 

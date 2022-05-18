@@ -1,4 +1,5 @@
-from flask import url_for, redirect, render_template, request
+import io
+from flask import url_for, redirect, render_template, request, send_file
 from wtforms import form, fields, validators
 import flask_admin as admin
 import flask_login as login
@@ -6,8 +7,11 @@ from flask_admin.contrib import sqla
 from flask_admin import helpers, expose
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, app
-from app.models import User
+from app.models import User, Book
+from flask import Blueprint
 
+
+bp = Blueprint('routes', __name__)
 
 class LoginForm(form.Form):
     login = fields.StringField(validators=[validators.DataRequired()])
@@ -104,7 +108,7 @@ class MyAdminIndexView(admin.AdminIndexView):
         return redirect(url_for('.index'))
 
 
-@app.route("/download/<int:id>", methods=['GET'])
+@bp.route("/download/<int:id>", methods=['GET'])
 def download_blob(id):
     if not login.current_user.is_authenticated:
         return redirect(url_for('.index'))
@@ -117,7 +121,7 @@ def download_blob(id):
 
 
 # Flask views
-@app.route('/')
+@bp.route('/')
 def index():
     return render_template('index.html')
 
